@@ -1,0 +1,812 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vinyl Record Picker</title>
+    <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiVmlueWwgUmVjb3JkIFBpY2tlciIsInNob3J0X25hbWUiOiJWaW55bCBQaWNrZXIiLCJkZXNjcmlwdGlvbiI6IlJhbmRvbWx5IHBpY2sgdmlueWwgcmVjb3JkcyBmcm9tIHlvdXIgY29sbGVjdGlvbiIsInN0YXJ0X3VybCI6Ii8iLCJkaXNwbGF5Ijoic3RhbmRhbG9uZSIsImJhY2tncm91bmRfY29sb3IiOiIjZjVmNWY1IiwidGhlbWVfY29sb3IiOiIjMzMzMzMzIiwiaWNvbnMiOlt7InNyYyI6ImRhdGE6aW1hZ2Uvc3ZnK3htbDtiYXNlNjQsUEhOMlp5QjRiV3h1Y3owaWFIUjBjRG92TDNkM2R5NTNNeTV2Y21jdk1qQXdNQzl6ZG1jaUlIZHBaSFJvUFNJek1qQWlJR2hsYVdkb2REMGlNekkzSWlCMmFXVjNRbTk0UFNJd0lEQWdNekkzSURNeU55SStQR05wY21Oc1pTQmplRDBpTVRZekxqVWlJR041UFNJeE5qTXVOU0lpSUhJOUlqUTRMalVpSUdacGJHdzlJaU16TXpNek16TWlMejQ4TDNOMlp6ND0iLCJzaXplcyI6IjE5MngxOTIiLCJ0eXBlIjoiaW1hZ2Uvc3ZnK3htbCJ9XX0=">
+    <meta name="theme-color" content="#333333">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Georgia', 'Times New Roman', serif;
+            background: linear-gradient(135deg, #f5f5f5 0%, #e8e8e8 100%);
+            color: #333;
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            color: #2c2c2c;
+            margin-bottom: 0.5rem;
+            font-weight: 300;
+            letter-spacing: -0.02em;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 1.1rem;
+        }
+
+        .upload-section {
+            width: 100%;
+            max-width: 500px;
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .file-input-wrapper {
+            position: relative;
+            display: inline-block;
+            margin-bottom: 1rem;
+        }
+
+        .file-input {
+            position: absolute;
+            opacity: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+        }
+
+        .file-input-button {
+            display: inline-block;
+            padding: 1rem 2rem;
+            background: #333;
+            color: white;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1.1rem;
+            border: 2px solid #333;
+        }
+
+        .file-input-button:hover {
+            background: #555;
+            border-color: #555;
+        }
+
+        .collection-info {
+            margin-top: 1rem;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.7);
+            border-radius: 8px;
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        .record-display {
+            width: 100%;
+            max-width: 500px;
+            text-align: center;
+            display: none;
+        }
+
+        .record-card {
+            background: white;
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+            transition: transform 0.3s ease;
+        }
+
+        .record-card:hover {
+            transform: translateY(-4px);
+        }
+
+        .album-art {
+            width: 280px;
+            height: 280px;
+            border-radius: 12px;
+            margin: 0 auto 1.5rem;
+            display: block;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+            object-fit: cover;
+        }
+
+        .album-info h2 {
+            font-size: 1.8rem;
+            color: #2c2c2c;
+            margin-bottom: 0.5rem;
+            font-weight: 400;
+        }
+
+        .album-info h3 {
+            font-size: 1.4rem;
+            color: #666;
+            margin-bottom: 1rem;
+            font-weight: 300;
+        }
+
+        .play-count {
+            font-size: 0.9rem;
+            color: #888;
+            margin-bottom: 1.5rem;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            font-family: inherit;
+        }
+
+        .btn-primary {
+            background: #2c5f2d;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #1e4220;
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: #666;
+            border: 2px solid #ddd;
+        }
+
+        .btn-secondary:hover {
+            background: #f0f0f0;
+            border-color: #ccc;
+        }
+
+        .stats {
+            margin-top: 2rem;
+            text-align: center;
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .cycle-complete {
+            background: linear-gradient(135deg, #2c5f2d, #4a8c4f);
+            color: white;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 1rem;
+            }
+
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .album-art {
+                width: 240px;
+                height: 240px;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .btn {
+                width: 200px;
+            }
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            color: #666;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎧 Vinyl Record Picker</h1>
+            <p>Upload your collection and let serendipity choose your next spin</p>
+        </div>
+
+        <div class="upload-section" id="uploadSection">
+            <div class="file-input-wrapper">
+                <input type="file" class="file-input" id="csvFile" accept=".csv" />
+                <label for="csvFile" class="file-input-button">
+                    Choose Discogs CSV File
+                </label>
+            </div>
+            <div class="collection-info" id="collectionInfo" style="display: none;"></div>
+        </div>
+
+        <div class="loading" id="loading">
+            Parsing your collection...
+        </div>
+
+        <div class="record-display" id="recordDisplay">
+            <div id="cycleComplete" class="cycle-complete" style="display: none;">
+                🎉 Collection Complete! Starting a new cycle...
+            </div>
+            
+            <div class="record-card">
+                <img id="albumArt" class="album-art" src="" alt="Album Cover" />
+                <div class="album-info">
+                    <h2 id="albumTitle"></h2>
+                    <h3 id="artistName"></h3>
+                    <div id="playCount" class="play-count"></div>
+                </div>
+                <div class="action-buttons">
+                    <button class="btn btn-secondary" id="drawAgainBtn">Pull Another</button>
+                    <button class="btn btn-primary" id="playRecordBtn">Play This Record</button>
+                </div>
+            </div>
+
+            <div class="stats" id="stats"></div>
+        </div>
+    </div>
+
+    <script>
+        class VinylRecordPicker {
+            constructor() {
+                this.records = [];
+                this.playHistory = this.loadPlayHistory();
+                this.currentRecord = null;
+                this.cycleNumber = this.loadCycleNumber();
+                this.initEventListeners();
+                this.registerServiceWorker();
+                
+                // Try to load saved collection on startup
+                this.loadSavedCollection();
+            }
+
+            initEventListeners() {
+                document.getElementById('csvFile').addEventListener('change', this.handleFileUpload.bind(this));
+                document.getElementById('drawAgainBtn').addEventListener('click', this.drawRandomRecord.bind(this));
+                document.getElementById('playRecordBtn').addEventListener('click', this.playRecord.bind(this));
+            }
+
+            showChangeCollectionOption() {
+                const uploadSection = document.getElementById('uploadSection');
+                uploadSection.innerHTML = `
+                    <div style="text-align: center; margin-bottom: 1rem;">
+                        <button class="btn btn-secondary" id="changeCollectionBtn" style="margin-right: 1rem;">
+                            Change Collection
+                        </button>
+                        <span style="color: #666; font-size: 0.9rem;">
+                            Collection loaded: ${this.records.length} records
+                        </span>
+                    </div>
+                    <div class="file-input-wrapper" id="fileInputWrapper" style="display: none;">
+                        <input type="file" class="file-input" id="csvFile" accept=".csv" />
+                        <label for="csvFile" class="file-input-button">
+                            Choose New Discogs CSV File
+                        </label>
+                    </div>
+                `;
+                
+                document.getElementById('changeCollectionBtn').addEventListener('click', () => {
+                    document.getElementById('fileInputWrapper').style.display = 'block';
+                    document.getElementById('changeCollectionBtn').style.display = 'none';
+                });
+                
+                // Re-attach file input listener for new element
+                document.getElementById('csvFile').addEventListener('change', this.handleFileUpload.bind(this));
+            }
+
+            async registerServiceWorker() {
+                if ('serviceWorker' in navigator) {
+                    try {
+                        const registration = await navigator.serviceWorker.register(this.createServiceWorkerBlob());
+                        console.log('ServiceWorker registered successfully');
+                    } catch (error) {
+                        console.log('ServiceWorker registration failed: ', error);
+                    }
+                }
+            }
+
+            createServiceWorkerBlob() {
+                const swCode = `
+                    const CACHE_NAME = 'vinyl-picker-v1';
+                    const urlsToCache = ['/'];
+                    
+                    self.addEventListener('install', (event) => {
+                        event.waitUntil(
+                            caches.open(CACHE_NAME)
+                                .then((cache) => cache.addAll(urlsToCache))
+                        );
+                    });
+                    
+                    self.addEventListener('fetch', (event) => {
+                        event.respondWith(
+                            caches.match(event.request)
+                                .then((response) => {
+                                    return response || fetch(event.request);
+                                }
+                            )
+                        );
+                    });
+                `;
+                const blob = new Blob([swCode], { type: 'application/javascript' });
+                return URL.createObjectURL(blob);
+            }
+
+            handleFileUpload(event) {
+                const file = event.target.files[0];
+                if (!file) return;
+
+                console.log('Starting file upload process...');
+                document.getElementById('loading').style.display = 'block';
+                document.getElementById('uploadSection').style.display = 'none';
+
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    try {
+                        console.log('File loaded, starting parse...');
+                        const csvText = e.target.result;
+                        console.log('File size:', file.size, 'bytes');
+                        console.log('First 200 characters:', csvText.substring(0, 200));
+                        
+                        const csvData = this.parseCSV(csvText);
+                        console.log('CSV parsed successfully, records found:', csvData.length);
+                        
+                        this.processCSVData(csvData);
+                        document.getElementById('loading').style.display = 'none';
+                    } catch (error) {
+                        console.error('Error in handleFileUpload:', error);
+                        alert(`Error: ${error.message}`);
+                        document.getElementById('loading').style.display = 'none';
+                        document.getElementById('uploadSection').style.display = 'block';
+                    }
+                };
+                reader.onerror = () => {
+                    console.error('File reading error');
+                    alert('Error reading the file. Please try again.');
+                    document.getElementById('loading').style.display = 'none';
+                    document.getElementById('uploadSection').style.display = 'block';
+                };
+                reader.readAsText(file, 'UTF-8');
+            }
+
+            parseCSV(csvText) {
+                console.log('Starting CSV parse...');
+                
+                if (!csvText || csvText.trim().length === 0) {
+                    throw new Error('CSV file appears to be empty');
+                }
+
+                // Normalize line endings and split into lines
+                const lines = csvText.replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n');
+                const nonEmptyLines = lines.filter(line => line.trim().length > 0);
+                
+                if (nonEmptyLines.length < 2) {
+                    throw new Error('CSV must have at least a header row and one data row');
+                }
+
+                console.log('Total non-empty lines:', nonEmptyLines.length);
+
+                // Parse header
+                const headers = this.parseCSVLine(nonEmptyLines[0]);
+                console.log('Headers found:', headers);
+                
+                if (headers.length === 0) {
+                    throw new Error('No headers found in CSV file');
+                }
+
+                // Parse data rows
+                const data = [];
+                for (let i = 1; i < nonEmptyLines.length; i++) {
+                    try {
+                        const values = this.parseCSVLine(nonEmptyLines[i]);
+                        if (values.length > 0) {
+                            const row = {};
+                            headers.forEach((header, index) => {
+                                row[header] = values[index] || '';
+                            });
+                            data.push(row);
+                        }
+                    } catch (lineError) {
+                        console.warn(`Error parsing line ${i + 1}:`, lineError.message);
+                    }
+                }
+                
+                if (data.length === 0) {
+                    throw new Error('No valid data rows found in CSV file');
+                }
+
+                console.log('Successfully parsed rows:', data.length);
+                return data;
+            }
+
+            parseCSVLine(line) {
+                const result = [];
+                let current = '';
+                let inQuotes = false;
+                let i = 0;
+                
+                while (i < line.length) {
+                    const char = line[i];
+                    const nextChar = line[i + 1];
+                    
+                    if (char === '"') {
+                        if (inQuotes && nextChar === '"') {
+                            current += '"';
+                            i += 2;
+                        } else {
+                            inQuotes = !inQuotes;
+                            i++;
+                        }
+                    } else if (char === ',' && !inQuotes) {
+                        result.push(current.trim());
+                        current = '';
+                        i++;
+                    } else {
+                        current += char;
+                        i++;
+                    }
+                }
+                
+                result.push(current.trim());
+                
+                while (result.length > 0 && result[result.length - 1] === '') {
+                    result.pop();
+                }
+                
+                return result;
+            }
+
+            processCSVData(data) {
+                console.log('Processing CSV data, total rows:', data.length);
+                
+                const myRecords = [];
+                
+                for (let i = 0; i < data.length; i++) {
+                    const record = data[i];
+                    const artist = this.getFieldValue(record, ['Artist', 'artist', 'ARTIST']);
+                    const title = this.getFieldValue(record, ['Title', 'title', 'TITLE', 'Album', 'album', 'ALBUM']);
+                    
+                    if (artist && title) {
+                        const newRecord = {
+                            id: myRecords.length,
+                            artist: artist,
+                            title: title,
+                            releaseId: this.getReleaseId(record),
+                            coverUrl: this.getFieldValue(record, ['Cover Image', 'cover_image', 'Image', 'image', 'Cover', 'cover', 'Thumb', 'thumb'])
+                        };
+                        
+                        if (!newRecord.coverUrl) {
+                            newRecord.coverUrl = this.tryMultipleImageSources(record, artist, title);
+                        }
+                        
+                        myRecords.push(newRecord);
+                    }
+                }
+
+                console.log('Valid records after processing:', myRecords.length);
+                
+                if (myRecords.length === 0) {
+                    throw new Error('No valid records found. Make sure your CSV has "Artist" and "Title" (or "Album") columns.');
+                }
+
+                this.records = myRecords;
+                this.saveCollection();
+                this.showCollectionInfo();
+                this.showChangeCollectionOption();
+                this.drawRandomRecord();
+            }
+
+            getFieldValue(record, possibleKeys) {
+                for (const key of possibleKeys) {
+                    if (record[key] && record[key].trim()) {
+                        return record[key].trim();
+                    }
+                }
+                return '';
+            }
+
+            getReleaseId(record) {
+                const releaseId = this.getFieldValue(record, ['Release ID', 'release_id', 'Release', 'ID', 'id']);
+                if (releaseId) {
+                    const match = releaseId.toString().match(/(\d+)/);
+                    return match ? match[1] : null;
+                }
+                return null;
+            }
+
+            getDiscogsImageUrl(record) {
+                const releaseId = this.getReleaseId(record);
+                if (releaseId) {
+                    // Try multiple Discogs image URL patterns
+                    return `https://i.discogs.com/${releaseId}-1.jpeg`;
+                }
+                return null;
+            }
+
+            // Alternative method to try different image sources
+            tryMultipleImageSources(record, artist, title) {
+                const sources = [];
+                
+                // If there's a direct image URL in the CSV
+                const directUrl = this.getFieldValue(record, ['Cover Image', 'cover_image', 'Image', 'image', 'Cover', 'cover', 'Thumb', 'thumb']);
+                if (directUrl) {
+                    sources.push(directUrl);
+                }
+                
+                // Try Discogs image if we have release ID
+                const discogsUrl = this.getDiscogsImageUrl(record);
+                if (discogsUrl) {
+                    sources.push(discogsUrl);
+                }
+                
+                // Always have placeholder as fallback
+                sources.push(this.generatePlaceholderImage(artist, title));
+                
+                return sources[0]; // Return first available option
+            }
+
+            showCollectionInfo() {
+                const totalRecords = this.records.length;
+                const playedInCurrentCycle = this.getPlayedRecordsInCurrentCycle().length;
+                const totalPlays = Object.values(this.playHistory).reduce((sum, plays) => sum + plays.length, 0);
+
+                document.getElementById('collectionInfo').innerHTML = `
+                    <strong>${totalRecords}</strong> records loaded<br>
+                    <strong>${playedInCurrentCycle}</strong> played this cycle<br>
+                    <strong>${totalPlays}</strong> total plays
+                `;
+                document.getElementById('collectionInfo').style.display = 'block';
+                document.getElementById('recordDisplay').style.display = 'block';
+            }
+
+            drawRandomRecord() {
+                const unplayedRecords = this.getUnplayedRecordsInCurrentCycle();
+                
+                if (unplayedRecords.length === 0) {
+                    this.completeCycle();
+                    return;
+                }
+
+                const randomIndex = Math.floor(Math.random() * unplayedRecords.length);
+                this.currentRecord = unplayedRecords[randomIndex];
+                this.displayRecord(this.currentRecord);
+                this.updateStats();
+                
+                document.getElementById('cycleComplete').style.display = 'none';
+            }
+
+            getUnplayedRecordsInCurrentCycle() {
+                return this.records.filter(record => {
+                    const recordHistory = this.playHistory[record.id] || [];
+                    return !recordHistory.some(play => play.cycle === this.cycleNumber);
+                });
+            }
+
+            getPlayedRecordsInCurrentCycle() {
+                return this.records.filter(record => {
+                    const recordHistory = this.playHistory[record.id] || [];
+                    return recordHistory.some(play => play.cycle === this.cycleNumber);
+                });
+            }
+
+            completeCycle() {
+                this.cycleNumber++;
+                this.saveCycleNumber();
+                document.getElementById('cycleComplete').style.display = 'block';
+                setTimeout(() => {
+                    this.drawRandomRecord();
+                }, 2000);
+            }
+
+            displayRecord(record) {
+                const albumArt = document.getElementById('albumArt');
+                
+                // Enhanced error handling with multiple fallback attempts
+                let imageAttempts = 0;
+                const maxAttempts = 3;
+                
+                const tryNextImage = () => {
+                    imageAttempts++;
+                    if (imageAttempts >= maxAttempts) {
+                        // Final fallback to generated placeholder
+                        albumArt.src = this.generatePlaceholderImage(record.artist, record.title);
+                        return;
+                    }
+                    
+                    // Try alternative Discogs URL formats if we have release ID
+                    if (record.releaseId) {
+                        const altUrls = [
+                            `https://i.discogs.com/${record.releaseId}-1.jpeg`,
+                            `https://i.discogs.com/rs:fit/g:sm/q:90/h:300/w:300/czM6Ly9kaXNjb2dz/database-images/R-${record.releaseId}-1.jpeg`,
+                            `https://img.discogs.com/${record.releaseId}.jpg`
+                        ];
+                        
+                        if (altUrls[imageAttempts - 1]) {
+                            albumArt.src = altUrls[imageAttempts - 1];
+                            return;
+                        }
+                    }
+                    
+                    // Fallback to placeholder
+                    albumArt.src = this.generatePlaceholderImage(record.artist, record.title);
+                };
+                
+                albumArt.onerror = tryNextImage;
+                
+                // Start with the original URL
+                albumArt.src = record.coverUrl;
+                
+                document.getElementById('albumTitle').textContent = record.title;
+                document.getElementById('artistName').textContent = record.artist;
+                
+                const playCount = this.getRecordPlayCount(record.id);
+                document.getElementById('playCount').textContent = 
+                    playCount === 0 ? 'Never played' : 
+                    playCount === 1 ? 'Played once' : 
+                    `Played ${playCount} times`;
+            }
+
+            playRecord() {
+                if (!this.currentRecord) return;
+
+                const playEntry = {
+                    date: new Date().toISOString(),
+                    cycle: this.cycleNumber
+                };
+
+                if (!this.playHistory[this.currentRecord.id]) {
+                    this.playHistory[this.currentRecord.id] = [];
+                }
+                
+                this.playHistory[this.currentRecord.id].push(playEntry);
+                this.savePlayHistory();
+
+                const playCount = this.getRecordPlayCount(this.currentRecord.id);
+                document.getElementById('playCount').textContent = 
+                    playCount === 1 ? 'Played once' : `Played ${playCount} times`;
+                
+                this.updateStats();
+                
+                setTimeout(() => {
+                    this.drawRandomRecord();
+                }, 1000);
+            }
+
+            getRecordPlayCount(recordId) {
+                return this.playHistory[recordId] ? this.playHistory[recordId].length : 0;
+            }
+
+            updateStats() {
+                const totalRecords = this.records.length;
+                const playedInCurrentCycle = this.getPlayedRecordsInCurrentCycle().length;
+                const unplayedInCurrentCycle = this.getUnplayedRecordsInCurrentCycle().length;
+                const totalPlays = Object.values(this.playHistory).reduce((sum, plays) => sum + plays.length, 0);
+
+                document.getElementById('stats').innerHTML = `
+                    Cycle ${this.cycleNumber} • ${playedInCurrentCycle}/${totalRecords} played • ${unplayedInCurrentCycle} remaining • ${totalPlays} total spins
+                `;
+            }
+
+            loadPlayHistory() {
+                const saved = localStorage.getItem('vinylPlayHistory');
+                return saved ? JSON.parse(saved) : {};
+            }
+
+            savePlayHistory() {
+                localStorage.setItem('vinylPlayHistory', JSON.stringify(this.playHistory));
+            }
+
+            loadCycleNumber() {
+                const saved = localStorage.getItem('vinylCycleNumber');
+                return saved ? parseInt(saved) : 1;
+            }
+
+            saveCycleNumber() {
+                localStorage.setItem('vinylCycleNumber', this.cycleNumber.toString());
+            }
+
+            saveCollection() {
+                localStorage.setItem('vinylCollection', JSON.stringify(this.records));
+            }
+
+            loadSavedCollection() {
+                const saved = localStorage.getItem('vinylCollection');
+                if (saved) {
+                    try {
+                        this.records = JSON.parse(saved);
+                        if (this.records.length > 0) {
+                            this.showCollectionInfo();
+                            this.showChangeCollectionOption();
+                            this.drawRandomRecord();
+                        }
+                    } catch (error) {
+                        console.log('Error loading saved collection:', error);
+                    }
+                }
+            }
+
+            generatePlaceholderImage(artist, title) {
+                const canvas = document.createElement('canvas');
+                canvas.width = 300;
+                canvas.height = 300;
+                const ctx = canvas.getContext('2d');
+
+                const gradient = ctx.createLinearGradient(0, 0, 300, 300);
+                const colors = [
+                    ['#2c5f2d', '#4a8c4f'],
+                    ['#5d4e75', '#8b7ca3'],
+                    ['#8b4513', '#cd853f'],
+                    ['#2f4f4f', '#708090'],
+                    ['#800000', '#cd5c5c']
+                ];
+                
+                const hash = artist.split('').reduce((a, b) => {
+                    a = ((a << 5) - a) + b.charCodeAt(0);
+                    return a & a;
+                }, 0);
+                const colorPair = colors[Math.abs(hash) % colors.length];
+                
+                gradient.addColorStop(0, colorPair[0]);
+                gradient.addColorStop(1, colorPair[1]);
+                ctx.fillStyle = gradient;
+                ctx.fillRect(0, 0, 300, 300);
+
+                ctx.beginPath();
+                ctx.arc(150, 150, 120, 0, 2 * Math.PI);
+                ctx.fillStyle = '#1a1a1a';
+                ctx.fill();
+
+                ctx.beginPath();
+                ctx.arc(150, 150, 40, 0, 2 * Math.PI);
+                ctx.fillStyle = '#f5f5f5';
+                ctx.fill();
+
+                ctx.fillStyle = '#ffffff';
+                ctx.font = 'bold 16px Arial';
+                ctx.textAlign = 'center';
+                
+                const truncatedArtist = artist.length > 20 ? artist.substring(0, 17) + '...' : artist;
+                ctx.fillText(truncatedArtist, 150, 80);
+                
+                const truncatedTitle = title.length > 25 ? title.substring(0, 22) + '...' : title;
+                ctx.font = '14px Arial';
+                ctx.fillText(truncatedTitle, 150, 240);
+
+                return canvas.toDataURL();
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            new VinylRecordPicker();
+        });
+    </script>
+</body>
+</html>
